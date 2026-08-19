@@ -1,7 +1,8 @@
-// 1. STATE (VERİ DEPOSU): Eklenen tüm harcamaları bu dizide (array) tutacağız.
-let transactions = [];
+// 1. STATE (VERİ DEPOSU)
+// Sayfa açıldığında önce LocalStorage'a bakıyoruz. Veri varsa yüklüyoruz, yoksa boş dizi [] oluşturuyoruz.
+let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
 
-// 2. DOM ELEMANLARI (HTML'deki kutuları JS tarafında yakalıyoruz)
+// 2. DOM ELEMANLARI
 const balanceEl = document.querySelector('.balance-card .card-amount');
 const incomeEl = document.querySelector('.income-card .card-amount');
 const expenseEl = document.querySelector('.expense-card .card-amount');
@@ -12,77 +13,112 @@ const amountInput = document.getElementById('amount');
 const typeSelect = document.getElementById('type');
 const transactionList = document.querySelector('.transaction-list');
 
-// 3. ARAYÜZÜ VE HESAPLAMALARI GÜNCELLEYEN FONKSİYON
-function updateUI() {
-  // A) Önce listedeki eski elemanları temizle
-  transactionList.innerHTML = '';
+// 3. YARDIMCI FONKSİYONLAR (Clean Code: Hesaplama ve Depolama Ayrı Fonksiyonlar)
 
-  let totalIncome = 0;
-  let totalExpense = 0;
+// Verileri LocalStorage'a kaydeder
+function updateLocalStorage() {
+  localStorage.setItem('transactions', JSON.stringify(transactions));
+}
 
-  // B) Dizedeki her bir harcamayı döngüye al ve ekrana bas
-  transactions.forEach((item) => {
-    // Toplamları hesapla
-    if (item.type === 'income') {
-      totalIncome += item.amount;
-    } else {
-      totalExpense += item.amount;
-    }
+// Hesaplamaları yapar
+function calculateTotals() {
+  const totalIncome = transactions
+    .filter(item => item.type === 'income')
+    .reduce((acc, item) => acc + item.amount, 0);
 
-    // Yeni bir <li> elementi oluştur
-    const li = document.createElement('li');
-    li.className = `transaction-item ${item.type}`;
-    
-    // HTML içeriğini hazırla (Sil butonu X dahil)
-    li.innerHTML = `
-      <span class="item-description">${item.description}</span>
-      <span class="item-amount">${item.type === 'income' ? '+' : '-'}$${item.amount.toFixed(2)}</span>
-      <button class="delete-btn" onclick="deleteTransaction(${item.id})">x</button>
-    `;
+  const totalExpense = transactions
+    .filter(item => item.type === 'expense')
+    .reduce((acc, item) => acc + item.amount, 0);
 
-    // Listeye ekle
-    transactionList.appendChild(li);
-  });
-
-  // C) Kartları Güncelle
   const balance = totalIncome - totalExpense;
-  
+
   incomeEl.textContent = `$${totalIncome.toFixed(2)}`;
   expenseEl.textContent = `$${totalExpense.toFixed(2)}`;
   balanceEl.textContent = `$${balance.toFixed(2)}`;
 }
 
-// 4. YENİ İŞLEM EKLEME (Form Gönderildiğinde Çalışır)
+// Listeyi ekrana basar (Empty State Kontrolü Dahil)
+function renderList() {
+  transactionList.innerHTML = '';
+
+  // Sprint 3: Empty State Kontrolü
+  if (transactions.length === 0) {
+    transactionList.innerHTML = `<li class="empty-state" style="text-align: center; color: var(--text-muted); padding: 15px;">Henüz bir işlem eklenmedi.</li>`;
+    return;
+  }
+
+  transactions.forEach((item) => {
+    const li = document.createElement('li');
+    li.className = `transaction-item ${item.type}`;
+    
+    // Dataset kullanarak id'yi HTML elemanına yüklüyoruz (Event Delegation için)
+    li.innerHTML = `
+      <span class="item-description">${item.description}</span>
+      <span class="item-amount">${item.type === 'income' ? '+' : '-'}$${item.amount.toFixed(2)}</span>
+      <button class="delete-btn" data-id="${item.id}">x</button>
+    `;
+
+    transactionList.appendChild(li);
+  });
+}
+
+// Ana UI Güncelleyici
+function updateUI() {
+  calculateTotals();
+  renderList();
+  updateLocalStorage(); // Sprint 3: Her değişiklikte veriyi kaydet
+}
+
+// 4. İŞLEM EKLEME (Validation Dahil)
 function addTransaction(e) {
-  // Sayfanın yenilenmesini engelle! (Çok Önemli)
   e.preventDefault();
 
-  // Yeni işlem nesnesini (Object) oluştur
+  const description = descriptionInput.value.trim();
+  const amount = Number(amountInput.value);
+
+  // Sprint 3: Validation Edge Cases (Geçersiz Değer Kontrolü)
+  if (!description) {
+    alert('Lütfen geçerli bir açıklama girin.');
+    return;
+  }
+
+  if (isNaN(amount) || amount <= 0) {
+    alert('Lütfen 0\'dan büyük geçerli bir miktar girin.');
+    return;
+  }
+
   const newTransaction = {
-    id: Date.now(), // Benzersiz bir kimlik (ID) üretir
-    description: descriptionInput.value,
-    amount: Number(amountInput.value), // Metni sayıya çevirir
+    id: Date.now(),
+    description: description,
+    amount: amount,
     type: typeSelect.value
   };
 
-  // Veriyi dizimize ekle
   transactions.push(newTransaction);
 
-  // Form inputlarını temizle
+  // Formu sıfırla
   descriptionInput.value = '';
   amountInput.value = '';
 
-  // Ekrana yansıt
   updateUI();
 }
 
-// 5. İŞLEM SİLME
-function deleteTransaction(id) {
-  // Tıklanan ID dışındaki tüm elemanları koru (Seçileni siler)
-  transactions = transactions.filter(item => item.id !== id);
-  updateUI();
+// 5. İŞLEM SİLME (Event Delegation Mantığı)
+function handleListClick(e) {
+  // Tıklanan eleman 'delete-btn' sınıfına sahipse
+  if (e.target.classList.contains('delete-btn')) {
+    const idToDelete = Number(e.target.getAttribute('data-id'));
+    transactions = transactions.filter(item => item.id !== idToDelete);
+    updateUI();
+  }
 }
 
 // 6. DINLEYICILER (EVENT LISTENERS)
-// Form gönderilince 'addTransaction' fonksiyonunu çalıştır
 transactionForm.addEventListener('submit', addTransaction);
+
+// Event Delegation: Tıklamayı direkt sil butonuna değil, ana listeye bağlıyoruz (Modern Yaklaşım)
+transactionList.addEventListener('click', handleListClick);
+
+// Sayfa ilk yüklendiğinde verileri ekrana bas
+document.addEventListener('DOMContentLoaded', updateUI);
+
