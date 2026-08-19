@@ -1,0 +1,188 @@
+/* ==========================================================================
+   1. GLOBAL RESET & CSS VARIABLES
+   ========================================================================== */
+/* Tüm elemanların varsayılan margin/padding değerlerini sıfırlıyoruz. 
+   box-sizing: border-box, padding ve border'ın genişliğe dahil edilmesini sağlar. */
+   
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Renkleri ve fontu tek bir merkezden yönetmek için CSS Değişkenleri (Variables) */
+:root {
+  --primary-color: #4a90e2;    /* Mavi / Nötr Accent */
+  --income-color: #2ecc71;     /* Yeşil (Gelir) */
+  --expense-color: #e74c3c;    /* Kırmızı (Gider) */
+  --bg-color: #f4f7f6;         /* Arka plan gri tonu */
+  --card-bg: #ffffff;          /* Kart beyazı */
+  --text-main: #2c3e50;        /* Koyu gri ana metin */
+  --text-muted: #7f8c8d;       /* Silik gri açıklama metni */
+  --border-radius: 12px;       /* Yuvarlatılmış köşe standardı */
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.05); /* Soft, modern gölge */
+  --font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+/* Uygulamanın ana konteyneri - Genişliği sınırlar ve ortalar */
+.app-container {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 30px; /* Bölümler arası dikey boşluk */
+}
+
+/* ==========================================================================
+   2. HEADER & SUMMARY CARDS
+   ========================================================================== */
+.app-header h1 {
+  text-align: center;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* SUMMARY CARDS GRID: 
+   repeat(auto-fit, minmax(200px, 1fr)) yapısı otomatik mobil uyum sağlar.
+   Ekran genişse 3'lü yan yana dizer, daralınca kartlar alt alta geçer. */
+.summary-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background-color: var(--card-bg);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* Kartların soluna renkli bir çizgi ekleyerek vurgu yapıyoruz */
+  border-left: 5px solid transparent; 
+}
+
+/* Kart Türlerine Özel Kenar Renkleri */
+.income-card { border-left-color: var(--income-color); }
+.expense-card { border-left-color: var(--expense-color); }
+.balance-card { border-left-color: var(--primary-color); }
+
+.card-title {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-amount {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* ==========================================================================
+   3. FORM SECTION
+   ========================================================================== */
+.form-section, .list-section {
+  background-color: var(--card-bg);
+  padding: 24px;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+}
+
+.form-section h2, .list-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+
+/* Form içindeki inputları yan yana dizmek için Flexbox */
+.transaction-form {
+  display: flex;
+  flex-wrap: wrap; /* Mobilde alta geçebilmesi için wrap şart */
+  gap: 15px;
+  align-items: flex-end; /* Label ve inputları alt hizadan bağlar */
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1; /* Inputların eşit alana yayılmasını sağlar */
+  min-width: 150px; /* Çok küçülmelerini engeller */
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.form-group input, .form-group select {
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+/* Input odaklandığında (focus) mavi renk alır */
+.form-group input:focus, .form-group select:focus {
+  border-color: var(--primary-color);
+}
+
+.btn-submit {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 11px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-submit:hover {
+  background-color: #357abd;
+}
+
+/* ==========================================================================
+   4. TRANSACTION LIST SECTION
+   ========================================================================== */
+.transaction-list {
+  list-style: none; /* Varsayılan madde işaretlerini siler */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between; /* Yazı solda, miktar sağda durur */
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--bg-color);
+  border-radius: 6px;
+  border-right: 4px solid transparent; /* Sağ kenara durum rengi */
+}
+
+/* Gelir ve Gider Sağ Çizgileri */
+.transaction-item.income { border-right-color: var(--income-color); }
+.transaction-item.expense { border-right-color: var(--expense-color); }
+
+.item-description {
+  font-weight: 500;
+}
+
+.item-amount {
+  font-weight: bold;
+}
