@@ -195,3 +195,19 @@ body {
     width: 100%; /* Mobilde buton tüm genişliği kaplar */
   }
 }
+
+/* Delete Button Styling */
+.delete-btn {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+  font-weight: bold;
+}
+
+.delete-btn:hover {
+  background-color: #cc0000;
+}
