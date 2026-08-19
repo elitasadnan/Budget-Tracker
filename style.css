@@ -3,7 +3,7 @@
    ========================================================================== */
 /* Tüm elemanların varsayılan margin/padding değerlerini sıfırlıyoruz. 
    box-sizing: border-box, padding ve border'ın genişliğe dahil edilmesini sağlar. */
-   
+
 * {
   margin: 0;
   padding: 0;
@@ -185,4 +185,13 @@ body {
 
 .item-amount {
   font-weight: bold;
+}
+
+/* ==========================================================================
+   5. RESPONSIVE / MOBILE OPTIMIZATIONS
+   ========================================================================== */
+@media (max-width: 600px) {
+  .btn-submit {
+    width: 100%; /* Mobilde buton tüm genişliği kaplar */
+  }
 }
